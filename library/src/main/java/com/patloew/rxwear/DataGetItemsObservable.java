@@ -2,6 +2,7 @@ package com.patloew.rxwear;
 
 import android.net.Uri;
 
+import android.support.annotation.NonNull;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataItem;
@@ -38,22 +39,26 @@ class DataGetItemsObservable extends BaseObservable<DataItem> {
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<DataItem> emitter) {
-        ResultCallback<DataItemBuffer> resultCallback = dataItemBuffer -> {
-            try {
-                if(!dataItemBuffer.getStatus().isSuccess()) {
-                    emitter.onError(new StatusException(dataItemBuffer.getStatus()));
-                } else {
-                    for (int i = 0; i < dataItemBuffer.getCount(); i++) {
-                        if(emitter.isDisposed()) { break; }
-                        emitter.onNext(dataItemBuffer.get(i).freeze());
-                    }
+        ResultCallback<DataItemBuffer> resultCallback = new ResultCallback<DataItemBuffer>() {
+            @Override public void onResult(@NonNull DataItemBuffer dataItemBuffer) {
+                try {
+                    if (!dataItemBuffer.getStatus().isSuccess()) {
+                        emitter.onError(new StatusException(dataItemBuffer.getStatus()));
+                    } else {
+                        for (int i = 0; i < dataItemBuffer.getCount(); i++) {
+                            if (emitter.isDisposed()) {
+                                break;
+                            }
+                            emitter.onNext(dataItemBuffer.get(i).freeze());
+                        }
 
-                    emitter.onComplete();
+                        emitter.onComplete();
+                    }
+                } catch (Throwable throwable) {
+                    emitter.onError(throwable);
+                } finally {
+                    dataItemBuffer.release();
                 }
-            } catch(Throwable throwable) {
-                emitter.onError(throwable);
-            } finally {
-                dataItemBuffer.release();
             }
         };
 

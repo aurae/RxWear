@@ -6,6 +6,9 @@ import android.support.annotation.NonNull;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.wearable.CapabilityInfo;
 
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Function;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -66,7 +69,13 @@ public class Capability {
 
     private Observable<CapabilityInfo> getAllInternal(int nodeFilter, Long timeout, TimeUnit timeUnit) {
         return Single.create(new CapabilityGetAllSingle(rxWear, nodeFilter, timeout, timeUnit))
-                .flatMapObservable(capabilityInfoMap -> Observable.fromIterable(capabilityInfoMap.values()));
+                .flatMapObservable(
+                    new Function<Map<String, CapabilityInfo>, ObservableSource<? extends CapabilityInfo>>() {
+                        @Override public ObservableSource<? extends CapabilityInfo> apply(
+                            Map<String, CapabilityInfo> capabilityInfoMap) throws Exception {
+                            return Observable.fromIterable(capabilityInfoMap.values());
+                        }
+                    });
     }
 
     // get

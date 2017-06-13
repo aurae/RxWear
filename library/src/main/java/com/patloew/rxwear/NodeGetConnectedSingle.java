@@ -1,10 +1,12 @@
 package com.patloew.rxwear;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
+import io.reactivex.functions.Function;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -33,7 +35,11 @@ class NodeGetConnectedSingle extends BaseSingle<List<Node>> {
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<List<Node>> emitter) {
         setupWearPendingResult(
                 Wearable.NodeApi.getConnectedNodes(apiClient),
-                SingleResultCallBack.get(emitter, NodeApi.GetConnectedNodesResult::getNodes)
+                SingleResultCallBack.get(emitter, new Function<NodeApi.GetConnectedNodesResult, List<Node>>() {
+                    @Override public List<Node> apply(NodeApi.GetConnectedNodesResult t) throws Exception {
+                        return t.getNodes();
+                    }
+                })
         );
     }
 }

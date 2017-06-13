@@ -3,6 +3,8 @@ package com.patloew.rxwear.transformers;
 import com.google.android.gms.wearable.DataItem;
 import com.patloew.rxwear.IOUtil;
 
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import java.io.Serializable;
 
 import io.reactivex.Observable;
@@ -53,15 +55,21 @@ public class DataItemGetSerializable<T extends Serializable> implements Observab
     @Override
     public Observable<T> apply(Observable<DataItem> observable) {
         if(path != null) {
-            observable = observable.filter(dataItem -> {
-                if (isPrefix) {
-                    return dataItem.getUri().getPath().startsWith(path);
-                } else {
-                    return dataItem.getUri().getPath().equals(path);
+            observable = observable.filter(new Predicate<DataItem>() {
+                @Override public boolean test(DataItem dataItem) throws Exception {
+                    if (isPrefix) {
+                        return dataItem.getUri().getPath().startsWith(path);
+                    } else {
+                        return dataItem.getUri().getPath().equals(path);
+                    }
                 }
             });
         }
 
-        return observable.map(dataItem -> IOUtil.<T>readObjectFromByteArray(dataItem.getData()));
+        return observable.map(new Function<DataItem, T>() {
+            @Override public T apply(DataItem dataItem) throws Exception {
+                return IOUtil.<T>readObjectFromByteArray(dataItem.getData());
+            }
+        });
     }
 }

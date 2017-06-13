@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
@@ -18,20 +17,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
     lintOptions {
         abortOnError false
     }
     packagingOptions {
         exclude 'META-INF/rxjava.properties'
     }
-}
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
-retrolambda {
-    javaVersion JavaVersion.VERSION_1_6
 }
 
 dependencies {
@@ -51,5 +47,5 @@ dependencies {
     compile "com.github.akarnokd:rxjava2-interop:0.6.0"
     compile 'com.jakewharton.rxbinding:rxbinding:0.4.0'
 
-    compile 'com.google.android.gms:play-services-wearable:9.8.0'
+    compile 'com.google.android.gms:play-services-wearable:10.2.1'
 }

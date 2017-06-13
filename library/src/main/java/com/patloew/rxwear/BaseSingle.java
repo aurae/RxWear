@@ -9,6 +9,7 @@ import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
 
+import io.reactivex.functions.Cancellable;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.SingleEmitter;
@@ -53,10 +54,12 @@ abstract class BaseSingle<T> extends BaseRx<T> implements SingleOnSubscribe<T> {
             emitter.onError(ex);
         }
 
-        emitter.setCancellable(() -> {
-            if (apiClient.isConnected() || apiClient.isConnecting()) {
-                onUnsubscribed(apiClient);
-                apiClient.disconnect();
+        emitter.setCancellable(new Cancellable() {
+            @Override public void cancel() throws Exception {
+                if (apiClient.isConnected() || apiClient.isConnecting()) {
+                    BaseSingle.this.onUnsubscribed(apiClient);
+                    apiClient.disconnect();
+                }
             }
         });
     }

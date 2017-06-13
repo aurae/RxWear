@@ -5,6 +5,8 @@ import com.google.android.gms.wearable.MessageEvent;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 
 /* Copyright 2016 Patrick Löwenstein
  *
@@ -50,15 +52,21 @@ public class MessageEventGetDataMap implements ObservableTransformer<MessageEven
     @Override
     public Observable<DataMap> apply(Observable<MessageEvent> observable) {
         if(path != null) {
-            observable = observable.filter(messageEvent -> {
-                if (isPrefix) {
-                    return messageEvent.getPath().startsWith(path);
-                } else {
-                    return messageEvent.getPath().equals(path);
+            observable = observable.filter(new Predicate<MessageEvent>() {
+                @Override public boolean test(MessageEvent messageEvent) throws Exception {
+                    if (isPrefix) {
+                        return messageEvent.getPath().startsWith(path);
+                    } else {
+                        return messageEvent.getPath().equals(path);
+                    }
                 }
             });
         }
 
-        return observable.map(messageEvent -> DataMap.fromByteArray(messageEvent.getData()));
+        return observable.map(new Function<MessageEvent, DataMap>() {
+            @Override public DataMap apply(MessageEvent messageEvent) throws Exception {
+                return DataMap.fromByteArray(messageEvent.getData());
+            }
+        });
     }
 }

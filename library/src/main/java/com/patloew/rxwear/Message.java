@@ -3,11 +3,11 @@ package com.patloew.rxwear;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import com.google.android.gms.wearable.Asset;
-import com.google.android.gms.wearable.DataMap;
-import com.google.android.gms.wearable.MessageEvent;
-import com.google.android.gms.wearable.PutDataRequest;
+import com.google.android.gms.wearable.*;
 
+import com.google.android.gms.wearable.Node;
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Function;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
@@ -96,7 +96,14 @@ public class Message {
 
     Observable<Integer> sendToAllRemoteNodesInternal(final String path, final byte[] data, final Long timeout, final TimeUnit timeUnit) {
         return rxWear.node().getConnectedNodesInternal(timeout, timeUnit)
-                .flatMap(node -> sendInternal(node.getId(), path, data, timeout, timeUnit).toObservable());
+                .flatMap(
+                    new Function<com.google.android.gms.wearable.Node, ObservableSource<? extends Integer>>() {
+                        @Override public ObservableSource<? extends Integer> apply(Node node)
+                            throws Exception {
+                            return Message.this.sendInternal(node.getId(), path, data, timeout,
+                                timeUnit).toObservable();
+                        }
+                    });
     }
 
     // Helper Methods

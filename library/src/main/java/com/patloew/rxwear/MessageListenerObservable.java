@@ -41,7 +41,11 @@ class MessageListenerObservable extends BaseObservable<MessageEvent> {
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<MessageEvent> emitter) {
-        listener = emitter::onNext;
+        listener = new MessageApi.MessageListener() {
+            @Override public void onMessageReceived(MessageEvent value) {
+                emitter.onNext(value);
+            }
+        };
 
         ResultCallback<Status> resultCallback = new StatusErrorResultCallBack(emitter);
 

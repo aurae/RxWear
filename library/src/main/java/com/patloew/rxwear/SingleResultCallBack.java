@@ -31,7 +31,11 @@ class SingleResultCallBack<T extends Result, R> implements ResultCallback<T> {
     }
 
     static <T extends Result> ResultCallback<T> get(@NonNull SingleEmitter<T> subscriber) {
-        return new SingleResultCallBack<>(subscriber, input -> input);
+        return new SingleResultCallBack<>(subscriber, new Function<T, T>() {
+            @Override public T apply(T input) throws Exception {
+                return input;
+            }
+        });
     }
 
     private SingleResultCallBack(@NonNull SingleEmitter<R> emitter, @NonNull Function<T, R> mapper) {

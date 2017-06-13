@@ -1,7 +1,10 @@
 package com.patloew.rxwear;
 
+import android.support.annotation.NonNull;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.Channel;
+import com.google.android.gms.wearable.ChannelApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.io.IOException;
@@ -37,17 +40,21 @@ class ChannelOpenSingle extends BaseSingle<Channel> {
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<Channel> emitter) {
         setupWearPendingResult(
                 Wearable.ChannelApi.openChannel(apiClient, nodeId, path),
-                openChannelResult -> {
+            new ResultCallback<ChannelApi.OpenChannelResult>() {
+                @Override
+                public void onResult(@NonNull ChannelApi.OpenChannelResult openChannelResult) {
                     if (!openChannelResult.getStatus().isSuccess()) {
                         emitter.onError(new StatusException(openChannelResult.getStatus()));
                     } else {
-                        if(openChannelResult.getChannel() != null) {
+                        if (openChannelResult.getChannel() != null) {
                             emitter.onSuccess(openChannelResult.getChannel());
                         } else {
-                            emitter.onError(new IOException("Channel connection could not be opened"));
+                            emitter.onError(
+                                new IOException("Channel connection could not be opened"));
                         }
                     }
                 }
+            }
         );
     }
 }

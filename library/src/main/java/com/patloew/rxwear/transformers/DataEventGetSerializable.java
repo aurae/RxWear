@@ -3,6 +3,8 @@ package com.patloew.rxwear.transformers;
 import com.google.android.gms.wearable.DataEvent;
 import com.patloew.rxwear.IOUtil;
 
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import java.io.Serializable;
 
 import io.reactivex.Observable;
@@ -70,19 +72,29 @@ public class DataEventGetSerializable<T extends Serializable> implements Observa
     @Override
     public Observable<T> apply(Observable<DataEvent> observable) {
         if(type != null) {
-            observable = observable.filter(dataEvent -> dataEvent.getType() == type);
-        }
-
-        if(path != null) {
-            observable = observable.filter(dataEvent -> {
-                if (isPrefix) {
-                    return dataEvent.getDataItem().getUri().getPath().startsWith(path);
-                } else {
-                    return dataEvent.getDataItem().getUri().getPath().equals(path);
+            observable = observable.filter(new Predicate<DataEvent>() {
+                @Override public boolean test(DataEvent dataEvent) throws Exception {
+                    return dataEvent.getType() == type;
                 }
             });
         }
 
-        return observable.map(dataEvent -> IOUtil.<T>readObjectFromByteArray(dataEvent.getDataItem().getData()));
+        if(path != null) {
+            observable = observable.filter(new Predicate<DataEvent>() {
+                @Override public boolean test(DataEvent dataEvent) throws Exception {
+                    if (isPrefix) {
+                        return dataEvent.getDataItem().getUri().getPath().startsWith(path);
+                    } else {
+                        return dataEvent.getDataItem().getUri().getPath().equals(path);
+                    }
+                }
+            });
+        }
+
+        return observable.map(new Function<DataEvent, T>() {
+            @Override public T apply(DataEvent dataEvent) throws Exception {
+                return IOUtil.<T>readObjectFromByteArray(dataEvent.getDataItem().getData());
+            }
+        });
     }
 }

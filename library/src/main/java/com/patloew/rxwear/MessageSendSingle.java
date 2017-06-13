@@ -1,9 +1,11 @@
 package com.patloew.rxwear;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.Wearable;
 
+import io.reactivex.functions.Function;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.SingleEmitter;
@@ -38,7 +40,11 @@ class MessageSendSingle extends BaseSingle<Integer> {
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<Integer> emitter) {
         setupWearPendingResult(
                 Wearable.MessageApi.sendMessage(apiClient, nodeId, path, data),
-                SingleResultCallBack.get(emitter, MessageApi.SendMessageResult::getRequestId)
+                SingleResultCallBack.get(emitter, new Function<MessageApi.SendMessageResult, Integer>() {
+                    @Override public Integer apply(MessageApi.SendMessageResult t) throws Exception {
+                        return t.getRequestId();
+                    }
+                })
         );
     }
 }

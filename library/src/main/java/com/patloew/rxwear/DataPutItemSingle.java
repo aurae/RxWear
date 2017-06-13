@@ -1,11 +1,13 @@
 package com.patloew.rxwear;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataItem;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
+import io.reactivex.functions.Function;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.SingleEmitter;
@@ -36,7 +38,11 @@ class DataPutItemSingle extends BaseSingle<DataItem> {
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<DataItem> emitter) {
         setupWearPendingResult(
                 Wearable.DataApi.putDataItem(apiClient, putDataRequest),
-                SingleResultCallBack.get(emitter, DataApi.DataItemResult::getDataItem)
+                SingleResultCallBack.get(emitter, new Function<DataApi.DataItemResult, DataItem>() {
+                    @Override public DataItem apply(DataApi.DataItemResult t) throws Exception {
+                        return t.getDataItem();
+                    }
+                })
         );
     }
 }

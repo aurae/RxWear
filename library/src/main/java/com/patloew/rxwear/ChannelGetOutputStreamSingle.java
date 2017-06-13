@@ -1,8 +1,10 @@
 package com.patloew.rxwear;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.wearable.Channel;
 
+import io.reactivex.functions.Function;
 import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
 
@@ -34,7 +36,11 @@ class ChannelGetOutputStreamSingle extends BaseSingle<OutputStream> {
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<OutputStream> emitter) {
         setupWearPendingResult(
                 channel.getOutputStream(apiClient),
-                SingleResultCallBack.get(emitter, Channel.GetOutputStreamResult::getOutputStream)
+                SingleResultCallBack.get(emitter, new Function<Channel.GetOutputStreamResult, OutputStream>() {
+                    @Override public OutputStream apply(Channel.GetOutputStreamResult t) throws Exception {
+                        return t.getOutputStream();
+                    }
+                })
         );
     }
 }

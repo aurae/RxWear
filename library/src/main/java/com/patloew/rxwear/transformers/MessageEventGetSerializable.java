@@ -3,6 +3,8 @@ package com.patloew.rxwear.transformers;
 import com.google.android.gms.wearable.MessageEvent;
 import com.patloew.rxwear.IOUtil;
 
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import java.io.Serializable;
 
 import io.reactivex.Observable;
@@ -54,15 +56,21 @@ public class MessageEventGetSerializable<T extends Serializable> implements Obse
     @Override
     public Observable<T> apply(Observable<MessageEvent> observable) {
         if(path != null) {
-            observable = observable.filter(messageEvent -> {
-                if (isPrefix) {
-                    return messageEvent.getPath().startsWith(path);
-                } else {
-                    return messageEvent.getPath().equals(path);
+            observable = observable.filter(new Predicate<MessageEvent>() {
+                @Override public boolean test(MessageEvent messageEvent) throws Exception {
+                    if (isPrefix) {
+                        return messageEvent.getPath().startsWith(path);
+                    } else {
+                        return messageEvent.getPath().equals(path);
+                    }
                 }
             });
         }
 
-        return observable.map(messageEvent -> IOUtil.<T>readObjectFromByteArray(messageEvent.getData()));
+        return observable.map(new Function<MessageEvent, T>() {
+            @Override public T apply(MessageEvent messageEvent) throws Exception {
+                return IOUtil.<T>readObjectFromByteArray(messageEvent.getData());
+            }
+        });
     }
 }

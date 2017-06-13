@@ -7,6 +7,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.Wearable;
 
+import io.reactivex.functions.Function;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.SingleEmitter;
@@ -37,7 +38,16 @@ class DataDeleteItemsSingle extends BaseSingle<Integer> {
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<Integer> emitter) {
-        ResultCallback<DataApi.DeleteDataItemsResult> resultResultCallback = SingleResultCallBack.get(emitter, DataApi.DeleteDataItemsResult::getNumDeleted);
+        ResultCallback<DataApi.DeleteDataItemsResult> resultResultCallback;
+        resultResultCallback =
+            SingleResultCallBack.get(emitter,
+                new Function<DataApi.DeleteDataItemsResult, Integer>() {
+                    @Override
+                    public Integer apply(DataApi.DeleteDataItemsResult deleteDataItemsResult)
+                        throws Exception {
+                        return deleteDataItemsResult.getNumDeleted();
+                    }
+                });
 
         if(filterType == null) {
             setupWearPendingResult(Wearable.DataApi.deleteDataItems(apiClient, uri), resultResultCallback);

@@ -43,7 +43,11 @@ class CapabilityListenerObservable extends BaseObservable<CapabilityInfo> {
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<CapabilityInfo> emitter) {
-        listener = emitter::onNext;
+        listener = new CapabilityApi.CapabilityListener() {
+            @Override public void onCapabilityChanged(CapabilityInfo value) {
+                emitter.onNext(value);
+            }
+        };
 
         ResultCallback<Status> resultCallback = new StatusErrorResultCallBack(emitter);
 

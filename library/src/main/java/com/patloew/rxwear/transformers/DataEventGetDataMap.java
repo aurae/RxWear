@@ -6,6 +6,8 @@ import com.google.android.gms.wearable.DataMapItem;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 
 /* Copyright 2016 Patrick Löwenstein
  *
@@ -65,20 +67,30 @@ public class DataEventGetDataMap implements ObservableTransformer<DataEvent, Dat
     @Override
     public Observable<DataMap> apply(Observable<DataEvent> observable) {
         if(type != null) {
-            observable = observable.filter(dataEvent -> dataEvent.getType() == type);
-        }
-
-        if(path != null) {
-            observable = observable.filter(dataEvent -> {
-                if (isPrefix) {
-                    return dataEvent.getDataItem().getUri().getPath().startsWith(path);
-                } else {
-                    return dataEvent.getDataItem().getUri().getPath().equals(path);
+            observable = observable.filter(new Predicate<DataEvent>() {
+                @Override public boolean test(DataEvent dataEvent) throws Exception {
+                    return dataEvent.getType() == type;
                 }
             });
         }
 
-        return observable.map(this::getDataMap);
+        if(path != null) {
+            observable = observable.filter(new Predicate<DataEvent>() {
+                @Override public boolean test(DataEvent dataEvent) throws Exception {
+                    if (isPrefix) {
+                        return dataEvent.getDataItem().getUri().getPath().startsWith(path);
+                    } else {
+                        return dataEvent.getDataItem().getUri().getPath().equals(path);
+                    }
+                }
+            });
+        }
+
+        return observable.map(new Function<DataEvent, DataMap>() {
+            @Override public DataMap apply(DataEvent dataEvent) throws Exception {
+                return DataEventGetDataMap.this.getDataMap(dataEvent);
+            }
+        });
     }
 
     private DataMap getDataMap(DataEvent dataEvent) {

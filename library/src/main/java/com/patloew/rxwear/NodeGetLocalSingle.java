@@ -1,10 +1,12 @@
 package com.patloew.rxwear;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
+import io.reactivex.functions.Function;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.SingleEmitter;
@@ -32,7 +34,11 @@ class NodeGetLocalSingle extends BaseSingle<Node> {
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<Node> emitter) {
         setupWearPendingResult(
                 Wearable.NodeApi.getLocalNode(apiClient),
-                SingleResultCallBack.get(emitter, NodeApi.GetLocalNodeResult::getNode)
+                SingleResultCallBack.get(emitter, new Function<NodeApi.GetLocalNodeResult, Node>() {
+                    @Override public Node apply(NodeApi.GetLocalNodeResult t) throws Exception {
+                        return t.getNode();
+                    }
+                })
         );
     }
 }

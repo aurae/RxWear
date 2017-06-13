@@ -1,10 +1,12 @@
 package com.patloew.rxwear;
 
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Result;
 import com.google.android.gms.wearable.CapabilityApi;
 import com.google.android.gms.wearable.CapabilityInfo;
 import com.google.android.gms.wearable.Wearable;
 
+import io.reactivex.functions.Function;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.SingleEmitter;
@@ -37,7 +39,11 @@ class CapabilityGetSingle extends BaseSingle<CapabilityInfo> {
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final SingleEmitter<CapabilityInfo> emitter) {
         setupWearPendingResult(
                 Wearable.CapabilityApi.getCapability(apiClient, capability, nodeFilter),
-                SingleResultCallBack.get(emitter, CapabilityApi.GetCapabilityResult::getCapability)
+                SingleResultCallBack.get(emitter, new Function<CapabilityApi.GetCapabilityResult, CapabilityInfo>() {
+                    @Override public CapabilityInfo apply(CapabilityApi.GetCapabilityResult t) throws Exception {
+                        return t.getCapability();
+                    }
+                })
         );
     }
 }

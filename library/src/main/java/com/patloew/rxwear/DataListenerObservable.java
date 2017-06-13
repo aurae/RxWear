@@ -7,6 +7,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.concurrent.TimeUnit;
@@ -41,9 +42,11 @@ class DataListenerObservable extends BaseObservable<DataEvent> {
 
     @Override
     protected void onGoogleApiClientReady(GoogleApiClient apiClient, final ObservableEmitter<DataEvent> emitter) {
-        listener = dataEventBuffer -> {
-            for(int i=0; i<dataEventBuffer.getCount(); i++) {
-                emitter.onNext(dataEventBuffer.get(i).freeze());
+        listener = new DataApi.DataListener() {
+            @Override public void onDataChanged(DataEventBuffer dataEventBuffer) {
+                for (int i = 0; i < dataEventBuffer.getCount(); i++) {
+                    emitter.onNext(dataEventBuffer.get(i).freeze());
+                }
             }
         };
 

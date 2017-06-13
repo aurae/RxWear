@@ -6,6 +6,8 @@ import com.google.android.gms.wearable.DataMapItem;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 
 /* Copyright 2016 Patrick Löwenstein
  *
@@ -51,15 +53,21 @@ public class DataItemGetDataMap implements ObservableTransformer<DataItem, DataM
     @Override
     public Observable<DataMap> apply(Observable<DataItem> observable) {
         if(path != null) {
-            observable = observable.filter(dataItem -> {
-                if (isPrefix) {
-                    return dataItem.getUri().getPath().startsWith(path);
-                } else {
-                    return dataItem.getUri().getPath().equals(path);
+            observable = observable.filter(new Predicate<DataItem>() {
+                @Override public boolean test(DataItem dataItem) throws Exception {
+                    if (isPrefix) {
+                        return dataItem.getUri().getPath().startsWith(path);
+                    } else {
+                        return dataItem.getUri().getPath().equals(path);
+                    }
                 }
             });
         }
 
-        return observable.map(dataItem -> DataMapItem.fromDataItem(dataItem).getDataMap());
+        return observable.map(new Function<DataItem, DataMap>() {
+            @Override public DataMap apply(DataItem dataItem) throws Exception {
+                return DataMapItem.fromDataItem(dataItem).getDataMap();
+            }
+        });
     }
 }

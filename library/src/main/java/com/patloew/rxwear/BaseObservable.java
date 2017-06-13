@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import io.reactivex.functions.Cancellable;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.ObservableEmitter;
@@ -46,10 +47,12 @@ abstract class BaseObservable<T> extends BaseRx<T> implements ObservableOnSubscr
             emitter.onError(ex);
         }
 
-        emitter.setCancellable(() -> {
-            if (apiClient.isConnected() || apiClient.isConnecting()) {
-                onUnsubscribed(apiClient);
-                apiClient.disconnect();
+        emitter.setCancellable(new Cancellable() {
+            @Override public void cancel() throws Exception {
+                if (apiClient.isConnected() || apiClient.isConnecting()) {
+                    BaseObservable.this.onUnsubscribed(apiClient);
+                    apiClient.disconnect();
+                }
             }
         });
     }

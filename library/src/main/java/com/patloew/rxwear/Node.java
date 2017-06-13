@@ -4,6 +4,9 @@ import android.support.annotation.NonNull;
 
 import com.patloew.rxwear.events.NodeEvent;
 
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.Function;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -58,7 +61,14 @@ public class Node {
 
     Observable<com.google.android.gms.wearable.Node> getConnectedNodesInternal(Long timeout, TimeUnit timeUnit) {
         return Single.create(new NodeGetConnectedSingle(rxWear, timeout, timeUnit))
-                .flatMapObservable(Observable::fromIterable);
+                .flatMapObservable(
+                    new Function<List<com.google.android.gms.wearable.Node>, ObservableSource<? extends com.google.android.gms.wearable.Node>>() {
+                        @Override
+                        public ObservableSource<? extends com.google.android.gms.wearable.Node> apply(List<com.google.android.gms.wearable.Node> source)
+                            throws Exception {
+                            return Observable.fromIterable(source);
+                        }
+                    });
     }
 
     // getLocalNode
